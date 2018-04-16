@@ -1,0 +1,165 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * A business network for shipping goods
+ */
+
+namespace org.acme.foodchain.goods
+
+/**
+ * The type of product being supplied in the chain
+ */
+ 
+enum ProductType {
+  o BANANAS
+  o APPLES
+  o PEARS
+  o PEACHES
+  o COFFEE
+}
+
+/**
+ * The status of a product-in-chain
+ */
+ 
+
+enum ProductStatus {
+  o CREATED
+  o IN_TRANSIT
+  o ARRIVED
+}
+
+/**
+ * An abstract transaction that is related to a ProductChains
+ */
+ 
+
+abstract transaction ProductTransaction {
+  --> Product product
+}
+
+
+/**
+ * An temperature reading for a shipment. E.g. received from a
+ * device within a temperature controlled shipping container
+ */
+ 
+transaction Identity extends ProductTransaction {
+  o Double sla
+}
+transaction TemperatureReading extends ProductTransaction{
+  o Double centigrade
+}
+
+
+/**
+ * A notification that a product has been received by the
+ * importer and that funds should be transferred from the importer
+ * to the grower to pay for the shipment.
+ */
+ 
+transaction ProductReceived extends ProductTransaction {
+}
+
+
+/**
+ * A product being tracked as an asset on the ledger
+ */
+ 
+asset Product identified by productId {
+  o String productId
+  o ProductType type
+  o ProductStatus status
+  o Long unitCount
+  o TemperatureReading[] temperatureReadings optional
+  --> Contract contract
+}
+
+
+/**
+ * Defines a contract between a Grower and an Customer using
+ * wholesaler and retailer, paying a set unit price. The unit price is multiplied by
+ * a penality factor proportional to the deviation from the min and max
+ * negociated temperatures for the shipment.
+ */
+ 
+asset Contract identified by contractId {
+  o String contractId
+  --> Grower grower
+  --> Wholesaler wholesaler
+  --> Retailer retailer
+  --> Customer customer
+  o DateTime arrivalDateTime
+  o Double unitPrice
+  o Double minTemperature
+  o Double maxTemperature
+  o Double minPenaltyFactor
+  o Double maxPenaltyFactor
+}
+
+
+/**
+ * A concept for a simple street address
+ */
+concept Address {
+  o String city optional
+  o String country
+  o String street optional
+  o String zip optional
+}
+
+/**
+ * An abstract participant type in this business network
+ */
+abstract participant Business identified by email {
+  o String email
+  o Address address
+  o Double accountBalance
+}
+
+/**
+ * A Grower is a type of participant in the network
+ */
+ 
+participant Grower extends Business {
+}
+
+/**
+ * A Wholesaler is a type of participant in the network
+ */
+
+participant Wholesaler extends Business {
+}
+
+/**
+ * A Retailer is a type of participant in the network
+ */
+
+participant Retailer extends Business {
+}
+
+
+/**
+ * A Customer is a type of participant in the network
+ */
+
+participant Customer extends Business {
+}
+
+/**
+ * JUST FOR INITIALIZING A DEMO
+ */
+transaction SetupDemo {
+}
